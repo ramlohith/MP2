@@ -7,12 +7,13 @@
 #include "cache.h"
 using namespace std;
 
-Cache::Cache(int s,int a,int b)
+Cache::Cache(int s,int a,int b,int total_p, Cache **cache)
 {
     ulong i, j;
     reads = readMisses = writes = 0;
     writeMisses = writeBacks = currentCycle = 0;
-
+    total_processors = total_p;
+    processor_cache = cache;
     size       = (ulong)(s);
     lineSize   = (ulong)(b);
     assoc      = (ulong)(a);
@@ -20,11 +21,6 @@ Cache::Cache(int s,int a,int b)
     numLines   = (ulong)(s/b);
     log2Sets   = (ulong)(log2(sets));
     log2Blk    = (ulong)(log2(b));
-
-    //*******************//
-    //initialize your counters here//
-    //*******************//
-
     tagMask =0;
     for(i=0;i<log2Sets;i++)
     {

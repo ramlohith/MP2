@@ -13,7 +13,7 @@
 typedef unsigned long ulong;
 typedef unsigned char uchar;
 typedef unsigned int uint;
-extern int total_processors;
+//extern int total_processors;
 /****add new states, based on the protocol****/
 enum{
     INVALID = 0,
@@ -59,9 +59,10 @@ protected:
     ulong calcAddr4Tag(ulong tag)   { return (tag << (log2Blk));}
 
 public:
+    int total_processors;
     ulong currentCycle;
-
-    Cache(int,int,int);
+    Cache **processor_cache;
+    Cache(int,int,int,int, Cache *a[]);
     ~Cache() { delete cache;}
 
     cacheLine *findLineToReplace(ulong addr);
@@ -88,6 +89,6 @@ public:
     int find_cache_block(ulong);
 
 };
-Cache **processor_cache = new Cache *[MAX_NUMBER_OF_PROCESSORS]; //declare global caches
+//Cache **processor_cache = new Cache *[MAX_NUMBER_OF_PROCESSORS]; //declare global caches
 
 #endif

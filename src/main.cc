@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iostream>
 #include "cache.h"
-#include "cache.cc"
 using namespace std;
 
 int main(int argc, char *argv[])

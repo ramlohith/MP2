@@ -67,13 +67,13 @@ int main(int argc, char *argv[])
             printf("./smp_cache <cache_size> <assoc> <block_size> <num_processors> <protocol> <trace_file> \n");
             exit(0);
     }
-    total_processors = num_processors;
+   // total_processors = num_processors;
     //*****create an array of caches here**********//
 
-
+    Cache **cachesArray = new Cache *[num_processors];
     for(int i=0;i<num_processors;i++)
     {
-        processor_cache[i] = new Cache(cache_size, cache_assoc, blk_size);
+        processor_cache[i] = new Cache(cache_size, cache_assoc, blk_size,num_processors,cachesArray);
     }
     //**read trace file,line by line,each(processor#,operation,address)**//
     pFile = fopen (fname,"r");

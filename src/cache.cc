@@ -176,7 +176,7 @@ int Cache::find_cache_block(ulong address)
 }
 void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char* operation)
 {
-    int i;
+    unsigned int i;
     currentCycle++; //per cache global counter to maintain LRU order
     incrementreadorwrite(operation);
     if((*operation == 'r') || (*operation == 'w')) {
@@ -275,7 +275,8 @@ void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char
 
 void Cache::MESI_Access(unsigned int processor_number, ulong address, const char* operation)
 {
-    int i,is_unique = 0;;
+    unsigned int i;
+    int is_unique = 0;
     currentCycle++;
     incrementreadorwrite(operation);
     for(i=0;i<total_processors;i++)

@@ -49,11 +49,6 @@ protected:
     ulong size, lineSize, assoc, sets, log2Sets, log2Blk, tagMask, numLines;
     ulong reads,readMisses,writes,writeMisses,writeBacks,BusRdX,memory_transactions,interventions,flush,invalidation,cache_to_cache;
 
-    //******///
-    //add coherence counters here///
-    //******///
-
-    cacheLine **cache;
     ulong calcTag(ulong addr)     { return (addr >> (log2Blk) );}
     ulong calcIndex(ulong addr)  { return ((addr >> log2Blk) & tagMask);}
     ulong calcAddr4Tag(ulong tag)   { return (tag << (log2Blk));}
@@ -61,6 +56,7 @@ protected:
 public:
     int total_processors;
     ulong currentCycle;
+    cacheLine **cache;
     Cache **processor_cache;
     Cache(int,int,int,int, Cache *a[]);
     ~Cache() { delete cache;}

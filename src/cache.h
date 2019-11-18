@@ -54,11 +54,11 @@ protected:
     ulong calcAddr4Tag(ulong tag)   { return (tag << (log2Blk));}
 
 public:
-    int total_processors;
+    unsigned int total_processors;
     ulong currentCycle;
     cacheLine **cache;
     Cache **processor_cache;
-    Cache(int,int,int,int, Cache *a[]);
+    Cache(int,int,int,unsigned int, Cache *a[]);
     ~Cache() { delete cache;}
 
     cacheLine *findLineToReplace(ulong addr);

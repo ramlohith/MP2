@@ -7,13 +7,13 @@
 #include "cache.h"
 using namespace std;
 
-Cache::Cache(int s,int a,int b,int total_p, Cache **cache)
+Cache::Cache(int s,int a,int b,unsigned int total_p, Cache **caches)
 {
     ulong i, j;
     reads = readMisses = writes = 0;
     writeMisses = writeBacks = currentCycle = 0;
     total_processors = total_p;
-    processor_cache = cache;
+    processor_cache = caches;
     size       = (ulong)(s);
     lineSize   = (ulong)(b);
     assoc      = (ulong)(a);

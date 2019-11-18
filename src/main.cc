@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     int cache_size = atoi(argv[1]);
     int cache_assoc= atoi(argv[2]);
     int blk_size   = atoi(argv[3]);
-    int num_processors = atoi(argv[4]);/*1, 2, 4, 8*/
+    unsigned int num_processors = atoi(argv[4]);/*1, 2, 4, 8*/
     int protocol   = atoi(argv[5]);	 /*0:MSI, 1:MESI, 2:Dragon*/
     char *fname =  (char *)malloc(20);
     fname = argv[6];
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     //Printing the initial values, as expected in the .val files provided
     cout<<"===== 506 Personal information =====\n";
     cout<<"FirstName: Ram"<<"\t"<<"LastName: Chavali\n";
-    cout<<"UnityID: rlchaval\n"<<"ECE492 Students? NO\n"
+    cout<<"UnityID: rlchaval\n"<<"ECE492 Students? NO\n";
 
     //*******print out simulator configuration here*******//
 
@@ -70,10 +70,10 @@ int main(int argc, char *argv[])
    // total_processors = num_processors;
     //*****create an array of caches here**********//
 
-    Cache **cachesArray = new Cache *[num_processors];
+    Cache **processor_cache = new Cache *[num_processors];
     for(int i=0;i<num_processors;i++)
     {
-        processor_cache[i] = new Cache(cache_size, cache_assoc, blk_size,num_processors,cachesArray);
+        processor_cache[i] = new Cache(cache_size, cache_assoc, blk_size,num_processors,processor_cache);
     }
     //**read trace file,line by line,each(processor#,operation,address)**//
     pFile = fopen (fname,"r");

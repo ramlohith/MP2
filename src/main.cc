@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     //*****create an array of caches here**********//
 
     Cache **processor_cache = new Cache *[num_processors];
-    for(int i=0;i<num_processors;i++)
+    for(unsigned int i=0;i<num_processors;i++)
     {
         processor_cache[i] = new Cache(cache_size, cache_assoc, blk_size,num_processors,processor_cache);
     }
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 
     fclose(pFile);
 
-    for(int i=0;i<num_processors;i++)
+    for(unsigned int i=0;i<num_processors;i++)
     {
         cout << "============ Simulation results (Cache " << i << ") ============" <<  endl;
 

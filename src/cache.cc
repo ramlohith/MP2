@@ -245,7 +245,7 @@ void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char
                 {
                     Line->setFlags(SHARED);
                     interventions++;
-                    writeBack(address); //flush
+                    writeBacks++; //flush
                     flush++;
                 }
 
@@ -253,7 +253,7 @@ void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char
                 {
                     Line->setFlags(INVALID);
                     invalidation++;
-                    writeBack(address);  //issue flush
+                    writeBacks++;  //issue flush
                     flush++;
                 }
             }
@@ -390,7 +390,7 @@ void Cache::MESI_Access(unsigned int processor_number, ulong address, const char
                 {
                     Line->setFlags(SHARED);
                     interventions++;
-                    writeBack(address);
+                    writeBacks++;
                     flush++;
                 }
 
@@ -398,7 +398,7 @@ void Cache::MESI_Access(unsigned int processor_number, ulong address, const char
                 {
                     Line->setFlags(INVALID);
                     invalidation++;
-                    writeBack(address);
+                    writeBacks;
                     flush++;
                 }
             }

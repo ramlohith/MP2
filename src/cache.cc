@@ -398,7 +398,7 @@ void Cache::MESI_Access(unsigned int processor_number, ulong address, const char
                 {
                     Line->setFlags(INVALID);
                     invalidation++;
-                    writeBacks;
+                    writeBacks++;
                     flush++;
                 }
             }

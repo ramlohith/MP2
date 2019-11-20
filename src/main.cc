@@ -44,19 +44,19 @@ int main(int argc, char *argv[])
     switch(protocol)                                                //check which protocol is to be implemented
     {
         case 0: cout<<"COHERENCE PROTOCOL: MSI";
-            cout << "TRACE FILE: ";
+            cout << "\nTRACE FILE: ";
             while(*fname != '\0') {
                 cout <<*fname++;
             }
             break;
         case 1: cout<<"COHERENCE PROTOCOL: MESI";
-            cout << "TRACE FILE: ";
+            cout << "\nTRACE FILE: ";
             while(*fname != '\0') {
                 cout<< *fname++;
             }
             break;
         case 2: cout<<"COHERENCE PROTOCOL: DRAGON";
-            cout<<"TRACE FILE: ";
+            cout<<"\nTRACE FILE: ";
             while(*fname != '\0') {
                 cout<< *fname++;
             }
@@ -75,10 +75,10 @@ int main(int argc, char *argv[])
         processor_cache[i] = new Cache(cache_size, cache_assoc, blk_size,num_processors,processor_cache);
     }
     //**read trace file,line by line,each(processor#,operation,address)**//
-    pFile = fopen (fname,"r");
-    if(pFile == 0)
+    pFile = fopen ("canneal.04t.debug","r");
+    if(pFile == NULL)
     {
-        printf("Trace file problem\n");
+        printf("\nTrace file problem\n");
         exit(0);
     }
     unsigned long int processor_num;
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
     for(unsigned int i=0;i<num_processors;i++)
     {
-        cout << "============ Simulation results (Cache " << i << ") ============" <<  endl;
+        cout << "\n============ Simulation results (Cache " << i << ") ============" <<  endl;
 
         //Calculate memTransactions
         ulong m;

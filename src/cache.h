@@ -83,9 +83,8 @@ public:
     void Dragon_Access(unsigned int, ulong, const char*);
     void incrementreadorwrite(const char *);
     int find_cache_block(ulong);
-    void MSI_ReadMiss(unsigned int);
-    void MSI_WriteMiss(unsigned int);
-    void MSI_WriteHit(unsigned int);
+    void MSI_ReadMiss(unsigned int,ulong);
+    void MSI_WriteMiss(unsigned int,ulong);
     void MSI_BusTransaction(unsigned int, ulong, const char*);
 };
 //Cache **processor_cache = new Cache *[MAX_NUMBER_OF_PROCESSORS]; //declare global caches

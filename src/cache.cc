@@ -174,88 +174,67 @@ int Cache::find_cache_block(ulong address)
 
     return is_present;
 }
-void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char* operation)
-{
+
+void Cache::MSI_ReadMiss(unsigned int processor_number) {
     unsigned int i;
-    currentCycle++; //per cache global counter to maintain LRU order
-    incrementreadorwrite(operation);
-    if((*operation == 'r') || (*operation == 'w')) {
-        cacheLine *Line = findLine(address);
-
-        if (Line == NULL)       //cache miss
-        {
-            cacheLine *Fill_Line = fillLine(address);
-            if (*operation == 'r') {
-                readMisses++;
-                Fill_Line->setFlags(SHARED);
-                //Issue BusRd
-                for (i = 0; i < total_processors; i++) {
-                    if (i == processor_number)
-                        continue;
-                    string operation_busRD = "R";
-                    processor_cache[i]->MSI_Access(i, address, operation_busRD.c_str());
-                }
-            } else if (*operation == 'w') {
-                writeMisses++;
-                Fill_Line->setFlags(MODIFIED);
-                BusRdX++;   //Issue BusRdX
-                for (i = 0; i < total_processors; i++) {
-                    if (i == processor_number)
-                        continue;
-                    string operation_BusRdX = "X";
-                    processor_cache[i]->MSI_Access(i, address, operation_BusRdX.c_str());
-                }
-            }
-        } else //cache hit --> getFlags/setFlags being used to determine which state the cache block should be in
-        {
-            updateLRU(Line);
-            if (Line->getFlags() == MODIFIED) {
-                Line->setFlags(MODIFIED);
-            } else if (Line->getFlags() == SHARED) {
-                if (*operation == 'r') {
-                    Line->setFlags(SHARED);
-                }
-
-                if (*operation == 'w') {
-                    Line->setFlags(MODIFIED);
-                    BusRdX++; //Issue BusRdX
-                    memory_transactions++;
-                    for (i = 0; i < total_processors; i++) {
-                        if (i == processor_number)
-                            continue;
-                        string operation_BusRdX = "X";
-                        processor_cache[i]->MSI_Access(i, address, operation_BusRdX.c_str());
-                    }
-                }
-            }
-
-        }
+    readMisses++;
+    Fill_Line->setFlags(SHARED);
+    //Issue BusRd
+    for (i = 0; i < total_processors; i++) {
+        if (i == processor_number)
+            continue;
+        string operation_busRD = "R";
+        processor_cache[i]->MSI_BusTransaction(i, address, operation_busRD.c_str());
     }
-        //for recursive call of this function --> to maintain state among other processors for same address, when cache hit.
-    else if ( (*operation == 'R') || (*operation == 'X') )
-    {
-        cacheLine * Line = findLine(address);
+}
 
-        if(Line != NULL)        //check for cache hit
+void Cache::MSI_WriteMiss(unsigned int processor_number) {
+    unsigned int i;
+    writeMisses++;
+    Fill_Line->setFlags(MODIFIED);
+    BusRdX++;   //Issue BusRdX
+    for (i = 0; i < total_processors; i++) {
+        if (i == processor_number)
+            continue;
+        string operation_BusRdX = "X";
+        processor_cache[i]->MSI_BusTransaction(i, address, operation_BusRdX.c_str());
+    }
+}
+void Cache::MSI_WriteHit(unsigned int processor_number) {
+    unsigned int i;
+    Line->setFlags(MODIFIED);
+    BusRdX++; //Issue BusRdX
+    memory_transactions++;
+    for (i = 0; i < total_processors; i++) {
+        if (i == processor_number)
+            continue;
+        string operation_BusRdX = "X";
+        processor_cache[i]->MSI_BusTransaction(i, address, operation_BusRdX.c_str());
+    }
+}
+void Cache::MSI_BusTransaction(unsigned int processor_number, ulong address, const char* operation) {
+
+    cacheLine * Line = findLine(address);
+    if(Line != NULL)        //check for cache hit
         {
             //MODIFIED state
             if ( Line->getFlags() == MODIFIED )
             {
                 if ( *operation == 'R')
                 {
-                    cout<<"operation is R";
+
                     Line->setFlags(SHARED);
                     interventions++;
-                    writeBack(address); //flush
+                    writeBacks++;; //flush
                     flush++;
                 }
 
                 if( *operation == 'X' )
                 {
-                    cout<<"operation is X";
+
                     Line->setFlags(INVALID);
                     invalidation++;
-                    writeBack(address);  //issue flush
+                    writeBacks++;;  //issue flush
                     flush++;
                 }
             }
@@ -271,6 +250,38 @@ void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char
                     invalidation++;
                 }
             }
+        }
+}
+void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char* operation)
+{
+    unsigned int i;
+    currentCycle++; //per cache global counter to maintain LRU order
+    incrementreadorwrite(operation);
+    if((*operation == 'r') || (*operation == 'w')) {
+        cacheLine *Line = findLine(address);
+
+        if (Line == NULL)       //cache miss
+        {
+            cacheLine *Fill_Line = fillLine(address);
+            if (*operation == 'r') {
+                MSI_ReadMiss(processor_number);
+            } else if (*operation == 'w') {
+               MSI_WriteMiss(processor_number);
+            }
+        } else //cache hit --> getFlags/setFlags being used to determine which state the cache block should be in
+        {
+            updateLRU(Line);
+            if (Line->getFlags() == MODIFIED) {
+                Line->setFlags(MODIFIED);
+            } else if (Line->getFlags() == SHARED) {
+                if (*operation == 'r') {
+                    Line->setFlags(SHARED);
+                }
+                if (*operation == 'w') {
+                    MSI_WriteHit(processor_number);
+                }
+            }
+
         }
     }
 }

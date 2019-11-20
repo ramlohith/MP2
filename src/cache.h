@@ -74,7 +74,7 @@ public:
     ulong getflush(){return flush;}
     ulong getinvalidations(){return invalidation;}
     ulong getcache_to_cache(){return cache_to_cache;}
-    void writeBack(ulong)   {cout<<"written back";writeBacks++;}
+    void writeBack(ulong)   {writeBacks++;}
     void Access(ulong,uchar);
     void printStats(ulong);
     void updateLRU(cacheLine *);
@@ -83,7 +83,10 @@ public:
     void Dragon_Access(unsigned int, ulong, const char*);
     void incrementreadorwrite(const char *);
     int find_cache_block(ulong);
-
+    void MSI_ReadMiss(unsigned int);
+    void MSI_WriteMiss(unsigned int);
+    void MSI_WriteHit(unsigned int);
+    void MSI_BusTransaction(unsigned int, ulong, const char*);
 };
 //Cache **processor_cache = new Cache *[MAX_NUMBER_OF_PROCESSORS]; //declare global caches
 

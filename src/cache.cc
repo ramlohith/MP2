@@ -282,116 +282,9 @@ void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char
         }
     }
 }
-
-void Cache::MESI_Access(unsigned int processor_number, ulong address, const char* operation)
+void Cache::MESI_BusTransaction(unsigned int processor_number, ulong address, const char* operation)
 {
-    unsigned int i;
-    int is_unique = 0;
-    currentCycle++;
-    incrementreadorwrite(operation);
-    for(i=0;i<total_processors;i++)
-    {
-        if (i == processor_number)
-            continue;
-        is_unique = processor_cache[i]->find_cache_block(address);
-        if (is_unique == 1)
-            break;
-    }
-
-    if ( (*operation == 'r') || (*operation == 'w') )
-    {
-        cacheLine * Line = findLine(address);
-        if(Line == NULL)  //cache miss
-        {
-            cacheLine *Fill_Line = fillLine(address);
-            if (*operation == 'r')
-            {
-                readMisses++;
-                if (is_unique == 1)
-                {
-                    Fill_Line->setFlags(SHARED);
-                    cache_to_cache++;
-                    for(i=0;i<total_processors;i++)
-                    {
-                        if (i == processor_number)
-                            continue;
-                        string operation_BusRd = "R";
-                        processor_cache[i]->MESI_Access(i, address, operation_BusRd.c_str());
-                    }
-                }
-                else if (is_unique == 0 )
-                {
-                    Fill_Line->setFlags(EXCLUSIVE);
-                    for(i=0;i<total_processors;i++)
-                    {
-                        if (i == processor_number)
-                            continue;
-                        string operation_BusRd = "R";
-                        processor_cache[i]->MESI_Access(i, address, operation_BusRd.c_str());
-                    }
-                }
-
-            }
-            else if ( *operation == 'w')
-            {
-                Fill_Line->setFlags(MODIFIED);
-                writeMisses++;
-                if (is_unique == 1)
-                    cache_to_cache++;
-                BusRdX++;
-                for(i=0;i<total_processors;i++)
-                {
-                    if (i == processor_number)
-                        continue;
-                    string operation_BusRdX = "X";
-                    processor_cache[i]->MESI_Access(i, address, operation_BusRdX.c_str());
-                }
-            }
-        }
-        else
-        {
-            updateLRU(Line);
-            if( Line->getFlags() == MODIFIED )
-            {
-                Line->setFlags(MODIFIED);
-            }
-            else if( Line->getFlags() == SHARED )
-            {
-                if( *operation == 'r')
-                {
-                    Line->setFlags(SHARED);
-                }
-
-                if( *operation == 'w')
-                {
-                    Line->setFlags(MODIFIED);
-                    for(i=0;i<total_processors;i++)
-                    {
-                        if(i == processor_number)
-                            continue;
-                        string operation_BusRdX = "M";
-                        processor_cache[i]->MESI_Access(i, address, operation_BusRdX.c_str());
-                    }
-                }
-
-            }
-            else if ( Line->getFlags() == EXCLUSIVE )
-            {
-                if ( *operation == 'r')
-                {
-                    Line->setFlags(EXCLUSIVE);
-                }
-                if ( *operation == 'w')
-                {
-                    Line->setFlags(MODIFIED);
-                }
-            }
-        }
-    }
-    else if ( (*operation == 'R') || (*operation == 'X') || (*operation == 'M'))
-    {
-        cacheLine * Line = findLine(address);
-
+    cacheLine * Line = findLine(address);
         if(Line != NULL)  //if block is present
         {
             if ( Line->getFlags() == MODIFIED )
@@ -444,12 +337,125 @@ void Cache::MESI_Access(unsigned int processor_number, ulong address, const char
                     invalidation++;
                 }
             }
-
         }
+}
+void Cache::MESI_ReadMiss(unsigned int processor_number, ulong address, int is_unique)
+{
+    cacheLine *Fill_Line = fillLine(address);
+    readMisses++;
+    if (is_unique == 1)
+    {
+        Fill_Line->setFlags(SHARED);
+        cache_to_cache++;
+        for(i=0;i<total_processors;i++)
+        {
+            if (i == processor_number)
+                continue;
+            string operation_BusRd = "R";
+            processor_cache[i]->MESI_BusTransaction(i, address, operation_BusRd.c_str());
+        }
+    }
+    else if (is_unique == 0 )
+    {
+        Fill_Line->setFlags(EXCLUSIVE);
+        for(i=0;i<total_processors;i++)
+        {
+            if (i == processor_number)
+                continue;
+            string operation_BusRd = "R";
+            processor_cache[i]->MESI_BusTransaction(i, address, operation_BusRd.c_str());
+        }
+    }
+}
 
+void Cache::MESI_WriteMiss(unsigned int processor_number, ulong address, int is_unique)
+{
+    cacheLine *Fill_Line = fillLine(address);
+    Fill_Line->setFlags(MODIFIED);
+    writeMisses++;
+    if (is_unique == 1)
+        cache_to_cache++;
+    BusRdX++;
+    for(i=0;i<total_processors;i++)
+    {
+        if (i == processor_number)
+            continue;
+        string operation_BusRdX = "X";
+        processor_cache[i]->MESI_BusTransaction(i, address, operation_BusRdX.c_str());
+    }
+}
+
+void Cache::MESI_Access(unsigned int processor_number, ulong address, const char* operation)
+{
+    unsigned int i;
+    int is_unique = 0;
+    currentCycle++;
+    incrementreadorwrite(operation);
+    for(i=0;i<total_processors;i++)         //find if block is unique to this cache
+    {
+        if (i == processor_number)
+            continue;
+        is_unique = processor_cache[i]->find_cache_block(address);
+        if (is_unique == 1)
+            break;
     }
 
+    if ( (*operation == 'r') || (*operation == 'w') )
+    {
+        cacheLine * Line = findLine(address);
+        if(Line == NULL)  //cache miss
+        {
+            if (*operation == 'r')
+            {
+                MESI_ReadMiss(processor_number, address, is_unique);
+            }
+            else if ( *operation == 'w')
+            {
+                MESI_WriteMiss(processor_number,address,is_unique);
+            }
+        }
+        else
+        {
+            updateLRU(Line);
+            if( Line->getFlags() == MODIFIED )
+            {
+                Line->setFlags(MODIFIED);
+            }
+            else if( Line->getFlags() == SHARED )
+            {
+                if( *operation == 'r')
+                {
+                    Line->setFlags(SHARED);
+                }
+
+                if( *operation == 'w')
+                {
+                    Line->setFlags(MODIFIED);
+                    for(i=0;i<total_processors;i++)
+                    {
+                        if(i == processor_number)
+                            continue;
+                        string operation_BusRdX = "M";
+                        processor_cache[i]->MESI_BusTransaction(i, address, operation_BusRdX.c_str());
+                    }
+                }
+
+            }
+            else if ( Line->getFlags() == EXCLUSIVE )
+            {
+                if ( *operation == 'r')
+                {
+                    Line->setFlags(EXCLUSIVE);
+                }
+                if ( *operation == 'w')
+                {
+                    Line->setFlags(MODIFIED);
+                }
+            }
+        }
+    }
 }
+
 void Cache::Dragon_Access(unsigned int p, ulong addr, const char* op)
 {
 

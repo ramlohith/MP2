@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     int protocol   = atoi(argv[5]);	 /*0:MSI, 1:MESI, 2:Dragon*/
     char *fname =  (char *)malloc(20);
     fname = argv[6];
+    string filename = "";
 
     //Printing the initial values, as expected in the .val files provided
     cout<<"===== 506 Personal information =====\n";
@@ -46,18 +47,21 @@ int main(int argc, char *argv[])
         case 0: cout<<"COHERENCE PROTOCOL: MSI";
             cout << "\nTRACE FILE: ";
             while(*fname != '\0') {
+		filename = filename + *fname;
                 cout <<*fname++;
             }
             break;
         case 1: cout<<"COHERENCE PROTOCOL: MESI";
             cout << "\nTRACE FILE: ";
             while(*fname != '\0') {
+		filename = filename + *fname;
                 cout<< *fname++;
             }
             break;
         case 2: cout<<"COHERENCE PROTOCOL: DRAGON";
             cout<<"\nTRACE FILE: ";
             while(*fname != '\0') {
+		filename = filename + *fname;
                 cout<< *fname++;
             }
             break;
@@ -75,7 +79,7 @@ int main(int argc, char *argv[])
         processor_cache[i] = new Cache(cache_size, cache_assoc, blk_size,num_processors,processor_cache);
     }
     //**read trace file,line by line,each(processor#,operation,address)**//
-    pFile = fopen ("canneal.04t.debug","r");
+    pFile = fopen (filename.c_str(),"r");
     if(pFile == NULL)
     {
         printf("\nTrace file problem\n");

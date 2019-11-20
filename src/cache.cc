@@ -243,17 +243,19 @@ void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char
             {
                 if ( *operation == 'R')
                 {
+                    cout<<"operation is R";
                     Line->setFlags(SHARED);
                     interventions++;
-                    writeBacks++; //flush
+                    writeBack(address); //flush
                     flush++;
                 }
 
                 if( *operation == 'X' )
                 {
+                    cout<<"operation is X";
                     Line->setFlags(INVALID);
                     invalidation++;
-                    writeBacks++;  //issue flush
+                    writeBack(address);  //issue flush
                     flush++;
                 }
             }

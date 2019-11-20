@@ -74,7 +74,7 @@ public:
     ulong getflush(){return flush;}
     ulong getinvalidations(){return invalidation;}
     ulong getcache_to_cache(){return cache_to_cache;}
-    void writeBack(ulong)   {writeBacks++;}
+    void writeBack(ulong)   {cout<<"written back";writeBacks++;}
     void Access(ulong,uchar);
     void printStats(ulong);
     void updateLRU(cacheLine *);

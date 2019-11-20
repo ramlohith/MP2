@@ -341,6 +341,7 @@ void Cache::MESI_BusTransaction(unsigned int processor_number, ulong address, co
 }
 void Cache::MESI_ReadMiss(unsigned int processor_number, ulong address, int is_unique)
 {
+    unsigned int i;
     cacheLine *Fill_Line = fillLine(address);
     readMisses++;
     if (is_unique == 1)
@@ -370,6 +371,7 @@ void Cache::MESI_ReadMiss(unsigned int processor_number, ulong address, int is_u
 
 void Cache::MESI_WriteMiss(unsigned int processor_number, ulong address, int is_unique)
 {
+    unsigned int i;
     cacheLine *Fill_Line = fillLine(address);
     Fill_Line->setFlags(MODIFIED);
     writeMisses++;

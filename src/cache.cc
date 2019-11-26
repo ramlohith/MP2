@@ -136,8 +136,8 @@ cacheLine *Cache::fillLine(ulong addr)
     cacheLine *victim = findLineToReplace(addr);
     assert(victim != 0);
     if(victim->getFlags() == DIRTY) writeBack(addr);
-    else if(victim->getFlags() == MODIFIED) writeback(addr);
-    else if(victiom->getFlags() == SM) writeback(addr);
+    else if(victim->getFlags() == MODIFIED) writeBack(addr);
+    else if(victim->getFlags() == SM) writeBack(addr);
 
     tag = calcTag(addr);
     victim->setTag(tag);

@@ -478,28 +478,28 @@ void Cache::Dragon_Access(unsigned int processor_number, ulong address, const ch
         cacheLine * Line = findLine(address);
         if(Line == NULL)
         {
-            if(operation == 'r')
+            if(*operation == 'r')
             {
                 Dragon_ReadMiss(processor_number,address,is_unique);
             }
-            if(operation == 'w')
+            if(*operation == 'w')
             {
                 Dragon_WriteMiss(processor_number, address, is_unique);
             }
         }
         else {
-            updateLRU(line);
+            updateLRU(Line);
             if (Line->getFlags() == MODIFIED) {
                 Line->setFlags(MODIFIED);
             } else if (Line->getFlags() == EXCLUSIVE) {
-                if (operation == 'r')
+                if (*operation == 'r')
                     Line->setFlags(EXCLUSIVE);
-                else if (operation == 'w')
+                else if (*operation == 'w')
                     Line->setFlags(MODIFIED);
             } else if (Line->getFlags() == SM) {
-                if (operation == 'r')
+                if (*operation == 'r')
                     Line->setFlags(SM);
-                else if (operation == 'w') {
+                else if (*operation == 'w') {
                     if (is_unique == 1) {
                         Line->setFlags(SM);
                         for (i = 0; i < total_processors; i++) {
@@ -518,14 +518,13 @@ void Cache::Dragon_Access(unsigned int processor_number, ulong address, const ch
                             processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusUp.c_str());
                         }
                     }
-
                 }
             }
             else if (Line->getFlags() == SC)
             {
-                if(operation == 'r')
+                if(*operation == 'r')
                 Line->setFlags(SC);
-                else if(operation == 'w')
+                else if(*operation == 'w')
                 {
                     if ( is_unique == 1)
                     {
@@ -562,14 +561,14 @@ void Cache::Dragon_WriteMiss(unsigned int processor_number, ulong address, int i
     {
         Fill_Line->setFlags(SM);
 
-        for(int i=0;i<total_processors;i++)
+        for(i=0;i<total_processors;i++)
         {
             if(i == processor_number)
                 continue;
             string operation_BusRd = "R";
-            processor_cache[i]->Access_Dragon(i, addr, operation_BusRd.c_str());
+            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusRd.c_str());
         }
-        for(int i=0;i<total_processors;i++)
+        for(i=0;i<total_processors;i++)
         {
             if (i==processor_number)
                 continue;
@@ -580,8 +579,8 @@ void Cache::Dragon_WriteMiss(unsigned int processor_number, ulong address, int i
 
     else if(is_unique == 0)
     {
-        newline->setFlags(MODIFIED);
-        for(int i=0;i<total_processors;i++)
+        Fill_Line->setFlags(MODIFIED);
+        for(i=0;i<total_processors;i++)
         {
             if( i == processor_number )
                 continue;
@@ -621,7 +620,7 @@ void Cache::Dragon_BusTransaction(unsigned int processor_number, ulong address, 
         {
             if ( Line->getFlags() == EXCLUSIVE)
             {
-                if ( *op == 'R')
+                if ( *operation == 'R')
                 {
                     Line->setFlags(SC);
                     interventions++;
@@ -643,7 +642,7 @@ void Cache::Dragon_BusTransaction(unsigned int processor_number, ulong address, 
                 if ( *operation == 'U' )
                 {
                     Line->setFlags(SC);
-                    newtag = calcTag(addr);
+                    newtag = calcTag(address);
                     Line->setTag(newtag);
                 }
             }
@@ -656,7 +655,7 @@ void Cache::Dragon_BusTransaction(unsigned int processor_number, ulong address, 
                 }
                 if ( *operation == 'U')
                 {
-                    line->setFlags(SC);
+                    Line->setFlags(SC);
                     newtag = calcTag(address);
                     Line->setTag(newtag);
                 }

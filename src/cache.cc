@@ -205,9 +205,8 @@ void Cache::MSI_WriteMiss(unsigned int processor_number, ulong address) {
 void Cache::MSI_BusTransaction(unsigned int processor_number, ulong address, const char* operation) {
 
     cacheLine * Line = findLine(address);
-    if(Line != NULL)        //check for cache hit
+    if(Line != NULL)
         {
-            //MODIFIED state
             if ( Line->getFlags() == MODIFIED )
             {
                 if ( *operation == 'R')
@@ -215,7 +214,7 @@ void Cache::MSI_BusTransaction(unsigned int processor_number, ulong address, con
 
                     Line->setFlags(SHARED);
                     interventions++;
-                    writeBacks++;; //flush
+                    writeBack(address);
                     flush++;
                 }
 
@@ -224,7 +223,7 @@ void Cache::MSI_BusTransaction(unsigned int processor_number, ulong address, con
 
                     Line->setFlags(INVALID);
                     invalidation++;
-                    writeBacks++;;  //issue flush
+                    writeBack(address);
                     flush++;
                 }
             }
@@ -278,7 +277,6 @@ void Cache::MSI_Access(unsigned int processor_number, ulong address,  const char
                     }
                 }
             }
-
         }
     }
 }

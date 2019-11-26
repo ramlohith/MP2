@@ -136,6 +136,8 @@ cacheLine *Cache::fillLine(ulong addr)
     cacheLine *victim = findLineToReplace(addr);
     assert(victim != 0);
     if(victim->getFlags() == DIRTY) writeBack(addr);
+    else if(victim->getFlags() == MODIFIED) writeback(addr);
+    else if(victiom->getFlags() == SM) writeback(addr);
 
     tag = calcTag(addr);
     victim->setTag(tag);
@@ -291,7 +293,7 @@ void Cache::MESI_BusTransaction(unsigned int processor_number, ulong address, co
                 {
                     Line->setFlags(SHARED);
                     interventions++;
-                    writeBacks++;
+                    writeBack(address);
                     flush++;
                 }
 
@@ -299,7 +301,7 @@ void Cache::MESI_BusTransaction(unsigned int processor_number, ulong address, co
                 {
                     Line->setFlags(INVALID);
                     invalidation++;
-                    writeBacks++;
+                    writeBack(address);
                     flush++;
                 }
             }

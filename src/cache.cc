@@ -458,10 +458,212 @@ void Cache::MESI_Access(unsigned int processor_number, ulong address, const char
     }
 }
 
-void Cache::Dragon_Access(unsigned int p, ulong addr, const char* op)
+void Cache::Dragon_Access(unsigned int processor_number, ulong address, const char* operation)
 {
+    currentCycle++;
+    incrementreadorwrite(operation);
+    int is_unique = 0;
+    unsigned i;
 
+    for(i=0;i<total_processors;i++)
+    {
+        if ( i == processor_number)
+            continue;
+        is_unique = processor_cache[i]->find_cache_block(address);
+        if (is_unique == 1)
+            break;
+    }
+    if ((*operation == 'r') || (*operation == 'w'))
+    {
+        cacheLine * Line = findLine(address);
+        if(Line == NULL)
+        {
+            if(operation == 'r')
+            {
+                Dragon_ReadMiss(processor_number,address,is_unique);
+            }
+            if(operation == 'w')
+            {
+                Dragon_WriteMiss(processor_number, address, is_unique);
+            }
+        }
+        else {
+            updateLRU(line);
+            if (Line->getFlags() == MODIFIED) {
+                Line->setFlags(MODIFIED);
+            } else if (Line->getFlags() == EXCLUSIVE) {
+                if (operation == 'r')
+                    Line->setFlags(EXCLUSIVE);
+                else if (operation == 'w')
+                    Line->setFlags(MODIFIED);
+            } else if (Line->getFlags() == SM) {
+                if (operation == 'r')
+                    Line->setFlags(SM);
+                else if (operation == 'w') {
+                    if (is_unique == 1) {
+                        Line->setFlags(SM);
+                        for (i = 0; i < total_processors; i++) {
+                            if (i == processor_number)
+                                continue;
+                            string operation_BusUp = "U";
+                            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusUp.c_str());
+                        }
+
+                    } else if (is_unique == 0) {
+                        Line->setFlags(MODIFIED);
+                        for (i = 0; i < total_processors; i++) {
+                            if (i == processor_number)
+                                continue;
+                            string operation_BusUp = "U";
+                            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusUp.c_str());
+                        }
+                    }
+
+                }
+            }
+            else if (Line->getFlags() == SC)
+            {
+                if(operation == 'r')
+                Line->setFlags(SC);
+                else if(operation == 'w')
+                {
+                    if ( is_unique == 1)
+                    {
+                        Line->setFlags(SM);
+                        for(i=0;i<total_processors;i++)
+                        {
+                            if(i == processor_number)
+                                continue;
+                            string operation_BusUp = "U";
+                            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusUp.c_str());
+                        }
+                    }
+
+                    else if (is_unique == 0) {
+                        Line->setFlags(MODIFIED);
+                        for (i = 0; i < total_processors; i++) {
+                            if (i == processor_number)
+                                continue;
+                            string operation_BusUp = "U";
+                            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusUp.c_str());
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
+void Cache::Dragon_WriteMiss(unsigned int processor_number, ulong address, int is_unique)
+{
+    unsigned int i;
+    writeMisses++;
+    cacheLine *Fill_Line = fillLine(address);
+    if(is_unique == 1)
+    {
+        Fill_Line->setFlags(SM);
+
+        for(int i=0;i<total_processors;i++)
+        {
+            if(i == processor_number)
+                continue;
+            string operation_BusRd = "R";
+            processor_cache[i]->Access_Dragon(i, addr, operation_BusRd.c_str());
+        }
+        for(int i=0;i<total_processors;i++)
+        {
+            if (i==processor_number)
+                continue;
+            string operation_BusUp = "U";
+            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusUp.c_str());
+        }
+    }
+
+    else if(is_unique == 0)
+    {
+        newline->setFlags(MODIFIED);
+        for(int i=0;i<total_processors;i++)
+        {
+            if( i == processor_number )
+                continue;
+            string operation_BusRd = "R";
+            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusRd.c_str());
+        }
+    }
+}
+void Cache::Dragon_ReadMiss(unsigned int processor_number, ulong address, int is_unique) {
+    unsigned i;
+    cacheLine *Fill_Line = fillLine(address);
+    readMisses++;
+    if (is_unique == 1) {
+        Fill_Line->setFlags(SC);
+        for (i = 0; i < total_processors; i++) {
+            if (i == processor_number)
+                continue;
+            string operation_BusRd = "R";
+            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusRd.c_str());
+        }
+    } else {
+        Fill_Line->setFlags(EXCLUSIVE);
+        for (i = 0; i < total_processors; i++) {
+            if (i == processor_number)
+                continue;
+            string operation_BusRd = "R";
+            processor_cache[i]->Dragon_BusTransaction(i, address, operation_BusRd.c_str());
+        }
+    }
+}
+
+void Cache::Dragon_BusTransaction(unsigned int processor_number, ulong address, const char* operation)
+{
+        ulong newtag;
+        cacheLine *  Line = findLine(address);
+        if (Line != NULL)
+        {
+            if ( Line->getFlags() == EXCLUSIVE)
+            {
+                if ( *op == 'R')
+                {
+                    Line->setFlags(SC);
+                    interventions++;
+                }
+            }
+            else if ( Line->getFlags() == MODIFIED) {
+                if (*operation == 'R') {
+                    Line->setFlags(SM);
+                    interventions++;
+                    flush++;
+                }
+            }
+            else if ( Line->getFlags() == SC)
+            {
+                if ( *operation == 'R')
+                {
+                    Line->setFlags(SC);
+                }
+                if ( *operation == 'U' )
+                {
+                    Line->setFlags(SC);
+                    newtag = calcTag(addr);
+                    Line->setTag(newtag);
+                }
+            }
+            else if ( Line->getFlags() == SM)
+            {
+                if ( *operation == 'R')
+                {
+                    Line->setFlags(SM);
+                    flush++;
+                }
+                if ( *operation == 'U')
+                {
+                    line->setFlags(SC);
+                    newtag = calcTag(address);
+                    Line->setTag(newtag);
+                }
+            }
+        }
+}
+
 void Cache::printStats(ulong m)
 {
     float miss_rate = (float) (100 * ((float)(readMisses + writeMisses)/(float)(reads+writes)));

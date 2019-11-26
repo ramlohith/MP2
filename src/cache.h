@@ -21,7 +21,9 @@ enum{
     DIRTY,
     SHARED,
     MODIFIED,
-    EXCLUSIVE
+    EXCLUSIVE,
+    SC,
+    SM
 };
 
 class cacheLine
@@ -89,6 +91,9 @@ public:
     void MESI_ReadMiss(unsigned int, ulong, int);
     void MESI_WriteMiss(unsigned int, ulong, int);
     void MESI_BusTransaction(unsigned int, ulong, const char*);
+    void Dragon_ReadMiss(unsigned int, ulong, int);
+    void Dragon_WriteMiss(unsigned int, ulong, int);
+    void Dragon_BusTransaction(unsigned int, ulong, const char*);
 };
 //Cache **processor_cache = new Cache *[MAX_NUMBER_OF_PROCESSORS]; //declare global caches
 

@@ -107,18 +107,27 @@ int main(int argc, char *argv[])
     {
         cout << "\n============ Simulation results (Cache " << i << ") ============" <<  endl;
 
-        //Calculate memTransactions
-        ulong m;
+        ulong memory_transactions;
 
-        if ( protocol == 0 )
-            m = processor_cache[i]->getmemory_transactions() + processor_cache[i]->getRM() + processor_cache[i]->getWM() + processor_cache[i]->getWB();
+        if ( protocol == 0 ) {
+            memory_transactions = processor_cache[i]->getmemory_transactions() + processor_cache[i]->getRM() +
+                                  processor_cache[i]->getWM() + processor_cache[i]->getWB();
+            processor_cache[i]->set_memory_transactions(memory_transactions);
+        }
 
-        if ( protocol == 1 )
-            m = processor_cache[i]->getRM() + processor_cache[i]->getWM() + processor_cache[i]->getWB() - processor_cache[i]->getcache_to_cache();
+        else if ( protocol == 1 ) {
+            memory_transactions =
+                    processor_cache[i]->getRM() + processor_cache[i]->getWM() + processor_cache[i]->getWB() -
+                    processor_cache[i]->getcache_to_cache();
+            processor_cache[i]->set_memory_transactions(memory_transactions);
+        }
 
-        if ( protocol == 2 )
-            m = processor_cache[i]->getRM() + processor_cache[i]->getWM() + processor_cache[i]->getWB();
+        else if ( protocol == 2 ) {
+            memory_transactions =
+                    processor_cache[i]->getRM() + processor_cache[i]->getWM() + processor_cache[i]->getWB();
+            processor_cache[i]->set_memory_transactions(memory_transactions);
+        }
 
-        processor_cache[i]->printStats(m);
+        processor_cache[i]->printStats();
     }
 }

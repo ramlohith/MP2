@@ -76,9 +76,10 @@ public:
     ulong getflush(){return flush;}
     ulong getinvalidations(){return invalidation;}
     ulong getcache_to_cache(){return cache_to_cache;}
+    void set_memory_transactions(ulong);
     void writeBack(ulong)   {writeBacks++;}
     void Access(ulong,uchar);
-    void printStats(ulong);
+    void printStats();
     void updateLRU(cacheLine *);
     void MSI_Access(unsigned int, ulong, const char*);
     void MESI_Access(unsigned int, ulong, const char*);

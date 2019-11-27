@@ -69,6 +69,10 @@ void Cache::Access(ulong addr,uchar op)
         if(op == 'w') line->setFlags(DIRTY);
     }
 }
+void Cache::set_memory_transactions(ulong memory_transaction)
+{
+    memory_transactions = memory_transaction;
+}
 
 /*look up line*/
 cacheLine * Cache::findLine(ulong addr)
@@ -663,23 +667,15 @@ void Cache::Dragon_BusTransaction(unsigned int processor_number, ulong address, 
         }
 }
 
-void Cache::printStats(ulong m)
+void Cache::printStats()
 {
     float miss_rate = (float) (100 * ((float)(readMisses + writeMisses)/(float)(reads+writes)));
 
-    cout
-            << "01. number of reads:      \t" << reads << '\n'
-            << "02. number of read misses:\t" << readMisses << '\n'
-            << "03. number of writes:     \t" << writes << '\n'
+    cout<< "01. number of reads:      \t" << reads << '\n'<< "02. number of read misses:\t" << readMisses << '\n'<< "03. number of writes:     \t" << writes << '\n'
             << "04. number of write misses:\t" << writeMisses << endl;
 	printf("05. total miss rate:      \t%.2f",miss_rate);
 	printf("%%\n");
-    cout << "06. number of writebacks: \t" << writeBacks << '\n'
-         << "07. number of cache-to-cache transfers: " <<  cache_to_cache << '\n'
-         << "08. number of memory transactions: " << m << '\n'
-         << "09. number of interventions:\t" << interventions << '\n'
-         << "10. number of invalidations:\t" << invalidation << '\n'
-         << "11. number of flushes:    \t" << flush << '\n'
-         << "12. number of BusRdX:     \t" <<  BusRdX << endl;
+    cout << "06. number of writebacks: \t" << writeBacks << '\n'<< "07. number of cache-to-cache transfers: " <<  cache_to_cache << '\n'<< "08. number of memory transactions: " << memory_transactions << '\n'<< "09. number of interventions:\t" << interventions << '\n'
+         << "10. number of invalidations:\t" << invalidation << '\n'<< "11. number of flushes:    \t" << flush << '\n'<< "12. number of BusRdX:     \t" <<  BusRdX << endl;
 }
 

@@ -672,10 +672,8 @@ void Cache::printStats(ulong m)
             << "02. number of read misses:\t" << readMisses << '\n'
             << "03. number of writes:     \t" << writes << '\n'
             << "04. number of write misses:\t" << writeMisses << endl;
-    if (miss_rate >= 10)
-        cout << "05. total miss rate:      \t" << miss_rate << "%" <<endl;
-    else if (miss_rate < 10)
-        cout << "05. total miss rate:      \t" << miss_rate << "%" << endl;
+	printf("05. total miss rate:      \t%.2f",miss_rate);
+	printf("%%\n");
     cout << "06. number of writebacks: \t" << writeBacks << '\n'
          << "07. number of cache-to-cache transfers: " <<  cache_to_cache << '\n'
          << "08. number of memory transactions: " << m << '\n'
